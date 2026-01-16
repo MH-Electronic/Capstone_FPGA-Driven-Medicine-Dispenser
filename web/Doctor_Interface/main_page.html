@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctor Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --primary-dark: #0284c7;
+            --surface-color: #ffffff;
+            --background-color: #f0f9ff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            background-image: radial-gradient(#e0f2fe 1px, transparent 1px);
+            background-size: 24px 24px;
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            background: var(--surface-color); width: 95%; max-width: 850px; margin: 40px auto;
+            border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; border: 1px solid var(--border-color);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header { background-color: white; padding: 24px 32px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary-dark); }
+        .doctor-profile { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-secondary); }
+        .doctor-avatar { width: 32px; height: 32px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+
+        form { padding: 32px; }
+        .form-section { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--border-color); position: relative; }
+        .form-section:last-of-type { border-bottom: none; }
+
+        /* HEADER AREA FOR SCAN BUTTON */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0; }
+        .section-title::before { content: ''; display: block; width: 4px; height: 18px; background-color: var(--primary-color); border-radius: 2px; }
+
+        .scan-btn { 
+            background-color: #6366f1; color: white; border: none; padding: 10px 24px; 
+            border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+        .scan-btn:hover { background-color: #4f46e5; transform: translateY(-1px); }
+        .scan-btn.scanning { background-color: #f59e0b; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px 16px; font-size: 15px; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: #f8fafc; transition: all 0.2s ease; }
+        input:focus { border-color: var(--primary-color); outline: none; background-color: #fff; }
+
+        .row { display: flex; gap: 20px; }
+        .row .col { flex: 1; }
+
+        .submit-btn { background-color: var(--primary-color); color: white; border: none; width: 100%; padding: 16px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .logout-btn { padding: 8px 16px; background-color: var(--primary-color); border: none; color: white; margin-top: 10px; border-radius: 6px; cursor: pointer; }
+        .clear-btn { padding: 8px 16px; background-color: #ef4444; border: none; color: white; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
+
+        @media (max-width: 600px) { .row { flex-direction: column; gap: 0; } .section-header { flex-direction: column; align-items: flex-start; gap: 15px; } .scan-btn { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <img src="https://img.icons8.com/color/48/hospital-room.png" alt="Logo" width="28" height="28" />
+                <h1>DOCTOR INTERFACE</h1>
+            </div>
+            <div class="user-controls">
+                <div class="doctor-profile">
+                    <span id="doctorNameDisplay">Loading...</span>
+                    <div class="doctor-avatar" id="doctorAvatarDisplay">--</div>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <form id="prescriptionForm">
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-title">Patient Information</div>
+                    <button type="button" id="scanBtn" class="scan-btn">Scan Patient Card</button>
+                </div>
+
+                <label>Patient Name</label>
+                <input type="text" id="patientName" required />
+
+                <div class="row">
+                    <div class="col">
+                        <label>Patient ID</label>
+                        <input type="text" id="patientId" required />
+                    </div>
+                    <div class="col">
+                        <label>Age</label>
+                        <input type="number" id="age" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Gender</label>
+                        <select id="gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Date of Visit</label>
+                        <input type="date" id="dateOfVisit" required />
+                    </div>
+                </div>
+                <button type="button" id="clearPatientInfoBtn" class="clear-btn">Clear Patient Info</button>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">Prescription Details</div>
+                <label>Medicine Name</label>
+                <select id="medicineName" required>
+                    <option value="">Select Medication</option>
+                    <option value="Paracetamol">Paracetamol</option>
+                    <option value="Ceterizine">Ceterizine</option>
+                    <option value="Loperamide">Loperamide</option>
+                    <option value="Mefenamic Acid">Mefenamic Acid</option>
+                    <option value="Bromhexine HCL">Bromhexine HCL</option>
+                </select>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Dosage</label>
+                        <input type="text" id="dosage" placeholder="e.g., 500mg" required />
+                    </div>
+                    <div class="col">
+                        <label>Quantity</label>
+                        <input type="number" id="quantity" required />
+                    </div>
+                </div>
+
+                <label>Frequency</label>
+                <select id="frequency" required>
+                    <option value="">Select Frequency</option>
+                    <option value="Once daily">Once daily</option>
+                    <option value="Twice daily">Twice daily</option>
+                    <option value="Every 8 hours">Every 8 hours</option>
+                    <option value="As needed">As needed</option>
+                </select>
+
+                <label>Additional Notes</label>
+                <textarea id="remarks" rows="3"></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Submit Prescription</button>
+        </form>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
