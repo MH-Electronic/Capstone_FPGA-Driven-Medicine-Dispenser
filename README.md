@@ -68,9 +68,8 @@ Operations at the USM Health Unit currently rely on manual processes, leading to
 
 ## 📂 Repository Structure
 * `/hdl`: Verilog source files (FSM, UART, FIFO, RC522, PWM).
-* `/firmware`: Raspberry Pi 4 server logic and ESP32-CAM code.
-* `/web`: MedPortal frontend and Firebase integration scripts.
-* `/docs`: Detailed FSM state transition diagrams and CAD files for the chassis.
+* `/ESP32_CAM`: ESP32-CAM code.
+* `/web`: MedPortal frontend and Firebase integration scripts. (Doctor Interface, User Interface & Monitoring Dashboard)
 
 ---
 *Developed as a Capstone Project for the University Sains Malaysia (USM).*
