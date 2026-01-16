@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Prescription - MEDPORTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* --- RETAINED MOBILE UI STYLES --- */
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: #1e293b; margin: 0; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .patient-box { background: #0f172a; color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+        .med-card { 
+            background: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); border-left: 5px solid #0ea5e9;
+        }
+        .med-header-flex { display: flex; gap: 15px; align-items: flex-start; margin-bottom: 15px; }
+        .med-photo { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .med-info-top { flex: 1; }
+        .med-name { font-weight: 700; font-size: 18px; color: #0f172a; margin: 0 0 4px 0; }
+        .med-description { font-size: 12px; color: #475569; line-height: 1.5; }
+        .med-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 12px; }
+        .label { font-weight: 600; color: #94a3b8; font-size: 11px; text-transform: uppercase; }
+
+        .remarks-box { background: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 12px; margin-top: 20px; color: #92400e; }
+        .download-btn { width: 100%; background: #059669; color: white; border: none; padding: 18px; border-radius: 16px; font-size: 18px; font-weight: 700; margin-top: 20px; cursor: pointer; }
+
+        /* --- STABILIZED PDF TEMPLATE STYLES --- */
+        #pdf-template { 
+            display: none; 
+            width: 750px; 
+            background: white; 
+            padding: 40px; 
+            color: black; 
+            box-sizing: border-box; /* Ensures padding doesn't push width over 750px */
+        }
+        .pdf-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+        .pdf-med-card { border: 1px solid #eee; padding: 20px; margin-bottom: 15px; border-radius: 8px; page-break-inside: avoid; }
+        .pdf-flex { display: flex; gap: 20px; }
+        .pdf-img { width: 100px; height: 100px; border-radius: 8px; border: 1px solid #ddd; object-fit: cover; }
+        .pdf-row { display: flex; gap: 30px; margin: 15px 0; font-size: 14px; }
+        
+        /* Forces the header to stay within bounds */
+        .pdf-header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 20px; 
+            width: 100%;
+            padding-right: 15px; /* Safety margin for text-align: right */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-view">
+        <div class="header">
+            <h1 style="font-size: 24px; margin: 0;">Digital Prescription</h1>
+            <p style="color: #64748b; font-size: 14px;">Visual Medication Guide</p>
+        </div>
+
+        <div class="patient-box">
+            <div class="label" style="color: #38bdf8;">PATIENT</div>
+            <div style="font-size: 20px; font-weight: 700;">{{ patient.patientName }}</div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between;">
+                <div><div class="label" style="color: #38bdf8;">DATE</div>{{ visit_date }}</div>
+                <div style="text-align: right;"><div class="label" style="color: #38bdf8;">DOCTOR ID</div>{{ prescription.doctorId or 'N/A' }}</div>
+            </div>
+        </div>
+
+        {% for med in prescription.medications %}
+        <div class="med-card">
+            <div class="med-header-flex">
+                <img src="" id="img-ui-{{ loop.index }}" class="med-photo" alt="Medicine">
+                <div class="med-info-top">
+                    <div class="med-name">{{ med.medicineName }}</div>
+                    <div class="med-description" id="desc-ui-{{ loop.index }}"></div>
+                </div>
+            </div>
+            
+            <div class="med-meta">
+                <div><div class="label">Dosage</div>{{ med.dosage }}</div>
+                <div><div class="label">Frequency</div>{{ med.frequency }}</div>
+                <div><div class="label">Quantity</div>{{ med.quantity }} Units</div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if prescription.remarks %}
+        <div class="remarks-box">
+            <div class="label" style="color: #b45309; margin-bottom: 5px;">Doctor's Remarks</div>
+            <div style="font-size: 14px;">{{ prescription.remarks }}</div>
+        </div>
+        {% endif %}
+
+        <button id="downloadBtn" class="download-btn">Save as PDF Guide</button>
+    </div>
+
+    <div id="pdf-template">
+        <div class="pdf-header">
+            <h1 style="margin:0;">OFFICIAL PRESCRIPTION SLIP</h1>
+            <p>Generated by MEDPORTAL - Visual Health Record</p>
+        </div>
+        
+        <div class="pdf-header-row">
+            <div style="flex: 1;">
+                <p><strong>Patient Name:</strong> {{ patient.patientName }}</p>
+                <p><strong>Visit Date:</strong> {{ visit_date }}</p>
+            </div>
+            <div style="flex: 1; text-align: right;">
+                <p><strong>Prescribed By (Doctor ID):</strong><br>
+                {{ prescription.doctorId or 'N/A' }}</p>
+            </div>
+        </div>
+        <hr>
+
+        {% for med in prescription.medications %}
+        <div class="pdf-med-card">
+            <div class="pdf-flex">
+                <img src="" id="img-pdf-{{ loop.index }}" class="pdf-img">
+                <div style="flex:1;">
+                    <div style="font-size: 20px; font-weight: bold; color: #0ea5e9;">{{ med.medicineName }}</div>
+                    <div class="pdf-row">
+                        <div><strong>Dosage:</strong> {{ med.dosage }}</div>
+                        <div><strong>Frequency:</strong> {{ med.frequency }}</div>
+                        <div><strong>Quantity:</strong> {{ med.quantity }} Units</div>
+                    </div>
+                    <div style="font-size: 12px; color: #444; border-top: 1px dashed #ddd; padding-top: 8px;" id="desc-pdf-{{ loop.index }}"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; font-size: 12px; color: #666; text-align: center;">
+            <p>This document is electronically verified. Doctor ID: <strong>{{ prescription.doctorId or 'N/A' }}</strong></p>
+            <p>Please follow the prescribed instructions carefully. No physical signature required.</p>
+        </div>
+    </div>
+
+    <script>
+        const medLibrary = {
+            "Paracetamol": {
+                desc: "<strong>Function:</strong> Relieves pain and fever.<br><strong>Side Effects:</strong> Generally safe; avoid excessive use to protect liver.",
+                img: "{{ url_for('static', filename='images/paracetamol.jpg') }}"
+            },
+            "Ceterizine": {
+                desc: "<strong>Function:</strong> Relieves allergy symptoms.<br><strong>Side Effects:</strong> May cause drowsiness or dry mouth.",
+                img: "{{ url_for('static', filename='images/cetirizine.jpg') }}"
+            },
+            "Loperamide": {
+                desc: "<strong>Function:</strong> Controls symptoms of diarrhea.<br><strong>Side Effects:</strong> May cause constipation or stomach cramps.",
+                img: "{{ url_for('static', filename='images/loperamide.jpg') }}"
+            },
+            "Mefenamic Acid": {
+                desc: "<strong>Function:</strong> Relieves short-term pain and inflammation.<br><strong>Side Effects:</strong> May cause stomach upset. Take after meals.",
+                img: "{{ url_for('static', filename='images/mefenamic Acid.jpg') }}"
+            },
+            "Bromhexine HCL": {
+                desc: "<strong>Function:</strong> Helps clear chest congestion and phlegm.<br><strong>Side Effects:</strong> May cause mild nausea.",
+                img: "{{ url_for('static', filename='images/bromhexine HCL.jpg') }}"
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const meds = [
+                {% for med in prescription.medications %}
+                "{{ med.medicineName }}",
+                {% endfor %}
+            ];
+
+            meds.forEach((name, index) => {
+                const data = medLibrary[name] || { desc: "Follow doctor's advice.", img: "" };
+                const uiDesc = document.getElementById(`desc-ui-${index + 1}`);
+                const pdfDesc = document.getElementById(`desc-pdf-${index + 1}`);
+                if (uiDesc) uiDesc.innerHTML = data.desc;
+                if (pdfDesc) pdfDesc.innerHTML = data.desc;
+                
+                const uiImg = document.getElementById(`img-ui-${index + 1}`);
+                const pdfImg = document.getElementById(`img-pdf-${index + 1}`);
+                if (data.img) {
+                    uiImg.src = data.img;
+                    pdfImg.src = data.img;
+                } else {
+                    uiImg.style.display = 'none';
+                    pdfImg.style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const btn = this;
+            const element = document.getElementById('pdf-template');
+            
+            // KEY FIX 1: Ensure template is shown before library calculates width
+            element.style.display = 'block';
+
+            btn.innerHTML = "Generating PDF...";
+            btn.disabled = true;
+
+            const opt = {
+                margin: 0.5,
+                filename: 'Prescription_{{ visit_date }}.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true, 
+                    /* KEY FIX 2: Explicitly set windowWidth to prevent mobile squishing */
+                    width: 750,
+                    windowWidth: 750 
+                },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+                btn.innerHTML = "Save as PDF Guide";
+                btn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
