@@ -59,7 +59,7 @@ Operations at the USM Health Unit currently rely on manual processes, leading to
 * **Modular Design:** Individual rack and pinion gears are replaceable, reducing electronic and mechanical waste.
 
 ### 📊 Data Management
-* **Network Optimization:** Employs **delta-update logic** for inventory tracking to prevent network congestion.
+* **Network Optimization:** Employs **delta-update logic** for inventory tracking to prevent continuously data updating.
 * **Cloud Integration:** Real-time data synchronization via **Firebase Firestore**.
 
 
